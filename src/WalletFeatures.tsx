@@ -9,6 +9,13 @@ import {
   Link,
   Stack,
   Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  useDisclosure
 } from "@chakra-ui/react";
 import {
   ContractCallInputType,
@@ -42,6 +49,7 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
   const [txStatus, setTxStatus] = useState('');
   const [balance, setBalance] = useState<string | null>(null);
   const wallet = user?.wallet;
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const onResult = (result: any) => {
     setResult((prevState: any) => ({
       ...(prevState || {}),
@@ -210,13 +218,12 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
   };
 
   return (
-    <Card bg="white" borderRadius={8}>
+    <Card bg="white" borderRadius={8} boxShadow="lg" p={6}>
       <CardBody>
-        <Heading size="md" color="black">Wallet Features</Heading>
-        <Divider my={4} />
-        <Stack spacing={4} divider={<Divider />}>
-          <Stack>
-            <Heading size="sm" color="black">Native Token Balance</Heading>
+        <Heading size="lg" color="black" mb={6}>Wallet Features</Heading>
+        <Divider my={4} borderColor="gray.300" />
+        <Stack spacing={6}>
+          <Section title="Native Token Balance">
             <Button
               onClick={fetchBalance}
               colorScheme="blue"
@@ -225,9 +232,9 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
               Fetch Balance
             </Button>
             <Text fontSize="xl" color="black">{balance ? `${balance} MATIC` : "Balance not fetched"}</Text>
-          </Stack>
+          </Section>
 
-          <Stack>
+          <Section title="Wallet Address">
             <Button
               onClick={getAddress}
               colorScheme="blue"
@@ -235,24 +242,10 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
             >
               Get Wallet Address
             </Button>
-            <Code borderRadius={8} p={4}>
-              {result?.wallet ? (
-                <Link
-                  isExternal
-                  textDecoration="underline"
-                  href={`https://mumbai.polygonscan.com/address/${result.wallet}`}
-                >
-                  {result.wallet}
-                </Link>
-              ) : (
-                <Text color="gray.500" fontStyle="italic" size="sm">
-                  {PLACEHOLDER}
-                </Text>
-              )}
-            </Code>
-          </Stack>
-          <Stack>
-            <Heading size="sm" color="black">Transfer Native Token</Heading>
+            <LinkDisplay value={result?.wallet} urlBase="https://mumbai.polygonscan.com/address/" />
+          </Section>
+
+          <Section title="Transfer Native Token">
             <Input
               color="black"
               placeholder="Recipient Address"
@@ -260,22 +253,24 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
               onChange={(e) => setRecipient(e.target.value)}
             />
             <Input
+              mt={2}
               color="black"
               placeholder="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
             <Button
+              mt={2}
               onClick={sendNativeToken}
               colorScheme="blue"
               isLoading={loading === Features.SEND_NATIVE_TOKEN}
             >
               Send
             </Button>
-            <Text fontSize="md" color="black">{txStatus}</Text>
-          </Stack>
+            <Text mt={2} fontSize="md" color="black">{txStatus}</Text>
+          </Section>
 
-          <Stack>
+          <Section title="Sign Message">
             <Button
               onClick={signMessage}
               colorScheme="blue"
@@ -283,56 +278,98 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
             >
               Sign Message
             </Button>
-            <Code borderRadius={8} p={4} width="full">
-              {result?.signedMessage || (
-                <Text color="gray.500" fontStyle="italic" size="sm">
-                  {PLACEHOLDER}
-                </Text>
-              )}
-            </Code>
-          </Stack>
-          <Stack>
+            <CodeDisplay value={result?.signedMessage} />
+          </Section>
+
+          <Section title="Sign Typed Data (EIP712)">
             <Button
               onClick={signTypedDataV4}
               colorScheme="blue"
               isLoading={loading === Features.SIGN_TYPED_DATA}
             >
-              Sign Type Data (EIP712)
+              Sign Typed Data
             </Button>
-            <Code borderRadius={8} p={4} width="full">
-              {result?.signedTypedData || (
-                <Text color="gray.500" fontStyle="italic" size="sm">
-                  {PLACEHOLDER}
-                </Text>
-              )}
-            </Code>
-          </Stack>
-          <Stack>
+            <CodeDisplay value={result?.signedTypedData} />
+          </Section>
+
+          <Section title="Call Gasless Contract Method">
             <Button
               onClick={callContractGasless}
               colorScheme="blue"
               isLoading={loading === Features.CALL_GASLESS_CONTRACT}
             >
-              Call contract method (Gasless)
+              Call Gasless Contract
             </Button>
-            <Code borderRadius={8} p={4} width="full">
-              {result?.gaslessTransactionHash ? (
-                <Link
-                  isExternal
-                  textDecoration="underline"
-                  href={`https://mumbai.polygonscan.com/tx/${result.gaslessTransactionHash}`}
-                >
-                  {result.gaslessTransactionHash}
-                </Link>
-              ) : (
-                <Text color="gray.500" fontStyle="italic" size="sm">
-                  {PLACEHOLDER}
-                </Text>
-              )}
-            </Code>
-          </Stack>
+            <LinkDisplay value={result?.gaslessTransactionHash} urlBase="https://mumbai.polygonscan.com/tx/" />
+          </Section>
+
+          <Section title="Export Private Key">
+
+            <Button onClick={onOpen} colorScheme="blue" mt={4}>
+              Export Account
+            </Button>
+            <Modal isOpen={isOpen} onClose={onClose} size="xl">
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Export Account</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                  <iframe
+                    src='https://withpaper.com/sdk/2022-08-12/embedded-wallet/export?clientId=8e0e99fe-933e-4ff8-a2f7-5c7439196c15'
+                    width="525px"
+                    height="475px"
+                  />
+                </ModalBody>
+              </ModalContent>
+            </Modal>
+          </Section>
+
         </Stack>
       </CardBody>
     </Card>
   );
 };
+
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <Stack spacing={4} borderWidth="1px" borderRadius="8px" p={4} borderColor="gray.300">
+    <Heading size="md" color="black">{title}</Heading>
+    <Divider borderColor="gray.300" />
+    {children}
+  </Stack>
+);
+
+interface CodeDisplayProps {
+  value?: string;
+}
+
+const CodeDisplay: React.FC<CodeDisplayProps> = ({ value }) => (
+  <Code borderRadius={8} p={4} width="full">
+    {value || "No data available"}
+  </Code>
+);
+
+interface LinkDisplayProps {
+  value?: string;
+  urlBase: string;
+}
+
+const LinkDisplay: React.FC<LinkDisplayProps> = ({ value, urlBase }) => (
+  <Code borderRadius={8} p={4} width="full">
+    {value ? (
+      <Link
+        isExternal
+        textDecoration="underline"
+        href={`${urlBase}${value}`}
+      >
+        {value}
+      </Link>
+    ) : (
+      "No data available"
+    )}
+  </Code>
+);
