@@ -224,7 +224,7 @@ export const WalletFeatures: React.FC<Props> = ({ user }) => {
             >
               Fetch Balance
             </Button>
-            <Text fontSize="xl" color="black">{balance ? `${balance} ETH` : "Balance not fetched"}</Text>
+            <Text fontSize="xl" color="black">{balance ? `${balance} MATIC` : "Balance not fetched"}</Text>
           </Stack>
 
           <Stack>
